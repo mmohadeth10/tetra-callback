@@ -8,6 +8,14 @@ import os
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
+from flask import Flask
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Bot is running!"
+
 app_flask = Flask(__name__)
 bot = Bot(BOT_TOKEN)
 
@@ -101,5 +109,6 @@ def tetra_callback():
     
 if __name__ == "__main__":
     app_flask.run(host="0.0.0.0", port=10000)
+
 
 
