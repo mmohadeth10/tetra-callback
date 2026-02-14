@@ -4,9 +4,9 @@ import threading
 from telegram import Bot
 import requests
 
-from config import (
-    BOT_TOKEN
-)
+import os
+
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
 app_flask = Flask(__name__)
 bot = Bot(BOT_TOKEN)
@@ -101,4 +101,5 @@ def tetra_callback():
     
 if __name__ == "__main__":
     app_flask.run(host="0.0.0.0", port=10000)
+
 
