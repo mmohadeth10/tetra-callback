@@ -1,49 +1,20 @@
 from flask import Flask, request
 import json
-import threading
 from telegram import Bot
 import requests
-
 import os
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
-from flask import Flask
-
 app = Flask(__name__)
+bot = Bot(BOT_TOKEN)
 
 @app.route("/")
 def home():
     return "Bot is running"
 
-app_flask = Flask(__name__)
-bot = Bot(BOT_TOKEN)
 
-
-def load_users():
-    try:
-        with open("users.json", "r", encoding="utf-8") as f:
-            return json.load(f)
-    except:
-        return {}
-
-def save_users(data):
-    with open("users.json", "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-def load_payments():
-    try:
-        with open("payments.json", "r", encoding="utf-8") as f:
-            return json.load(f)
-    except:
-        return {}
-
-def save_payments(data):
-    with open("payments.json", "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-
-
-@app_flask.route("/tetra_callback", methods=["POST"])
+@app.route("/tetra_callback", methods=["POST"])
 def tetra_callback():
     data = request.json
     print("Callback:", data)
@@ -90,7 +61,6 @@ def tetra_callback():
 
         users.setdefault(user_id, {"balance": 0})
         users[user_id]["balance"] += amount_toman
-
         payment["status"] = "approved"
 
         save_users(users)
@@ -106,10 +76,31 @@ def tetra_callback():
     except Exception as e:
         print("FINAL ERROR:", e)
         return "ERROR", 500
-    
+
+
+def load_users():
+    try:
+        with open("users.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return {}
+
+def save_users(data):
+    with open("users.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+def load_payments():
+    try:
+        with open("payments.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    except:
+        return {}
+
+def save_payments(data):
+    with open("payments.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
 if __name__ == "__main__":
-    app_flask.run(host="0.0.0.0", port=10000)
-
-
-
-
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
