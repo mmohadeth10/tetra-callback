@@ -1,27 +1,20 @@
 from flask import Flask, request
 import json
-from telegram import Bot
 import requests
 import os
-
-# گرفتن توکن از Environment Variable
-BOT_TOKEN = os.environ.get("BOT_TOKEN")
+from telegram import Bot
 
 app = Flask(__name__)
+
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
 bot = Bot(BOT_TOKEN)
 
 
-# -------------------------
-# صفحه تست برای جلوگیری از 404
-# -------------------------
 @app.route("/")
 def home():
-    return "Bot is running", 200
+    return "Bot is running"
 
 
-# -------------------------
-# لود و ذخیره کاربران
-# -------------------------
 def load_users():
     try:
         with open("users.json", "r", encoding="utf-8") as f:
@@ -29,14 +22,12 @@ def load_users():
     except:
         return {}
 
+
 def save_users(data):
     with open("users.json", "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-# -------------------------
-# لود و ذخیره پرداخت‌ها
-# -------------------------
 def load_payments():
     try:
         with open("payments.json", "r", encoding="utf-8") as f:
@@ -44,21 +35,16 @@ def load_payments():
     except:
         return {}
 
+
 def save_payments(data):
     with open("payments.json", "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-# -------------------------
-# کال‌بک درگاه تترا
-# -------------------------
 @app.route("/tetra_callback", methods=["POST"])
 def tetra_callback():
     data = request.json
-    print("Callback received:", data)
-
-    if not data:
-        return "NO DATA", 400
+    print("Callback:", data)
 
     status = data.get("status")
     hashid = data.get("hashid")
@@ -67,12 +53,8 @@ def tetra_callback():
     if status != 100:
         return "FAILED", 400
 
-    # درخواست تایید پرداخت
     verify_url = "https://api.tetra98.ir/api/PaymentVerification"
-    payload = {
-        "hashid": hashid,
-        "authority": authority
-    }
+    payload = {"hashid": hashid, "authority": authority}
 
     try:
         verify_response = requests.post(verify_url, json=payload, timeout=40)
@@ -109,7 +91,6 @@ def tetra_callback():
         save_users(users)
         save_payments(payments)
 
-        # ارسال پیام به کاربر
         bot.send_message(
             chat_id=int(user_id),
             text=f"✅ پرداخت با موفقیت انجام شد\n💰 {amount_toman:,} تومان به کیف پول شما اضافه شد."
@@ -122,8 +103,5 @@ def tetra_callback():
         return "ERROR", 500
 
 
-# -------------------------
-# اجرای سرور
-# -------------------------
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
